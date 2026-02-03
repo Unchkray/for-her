@@ -5,34 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For My Love</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: sans-serif; }
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Arial', sans-serif; }
         canvas { display: block; }
-        #overlay-text {
+        #final-ui {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: #ff85a1;
-            font-size: 2rem;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            z-index: 100;
+        }
+        .heart-outline {
+            width: 450px;
+            height: 450px;
+            background-color: #ff85a1;
+            position: relative;
+            transform: rotate(-45deg);
+            box-shadow: 0 0 50px rgba(255, 133, 161, 0.4);
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        .heart-outline:before, .heart-outline:after {
+            content: "";
+            background-color: #ff85a1;
+            border-radius: 50%;
+            height: 450px;
+            position: absolute;
+            width: 450px;
+        }
+        .heart-outline:before { top: -225px; left: 0; }
+        .heart-outline:after { left: 225px; top: 0; }
+        
+        .final-text {
+            position: absolute;
+            transform: rotate(45deg); /* Mengimbangi rotasi heart */
+            color: #fff;
+            font-size: 2.2rem;
             font-weight: bold;
             text-align: center;
-            pointer-events: none;
-            z-index: 10;
-            display: none;
             width: 100%;
+            z-index: 110;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
         }
-        .red-heart { color: red; }
+        @keyframes pulse {
+            0%, 100% { transform: rotate(-45deg) scale(1); }
+            50% { transform: rotate(-45deg) scale(1.05); }
+        }
     </style>
 </head>
 <body>
 
-    <div id="overlay-text">I Love <span class="red-heart">❤️</span> You Sayang</div>
+    <div id="final-ui">
+        <div class="heart-outline">
+            <div class="final-text">I Love ❤️ You Sayang</div>
+        </div>
+    </div>
     <canvas id="mainCanvas"></canvas>
 
     <script>
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d');
-        const overlayText = document.getElementById('overlay-text');
+        const finalUI = document.getElementById('final-ui');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -40,106 +74,86 @@
         let particles = [];
         let rainDrops = [];
         let currentStep = 0;
-        const messages = ["3", "2", "1", "YOU", "ARE", "MY", "LOVE", "HEART"];
+        let isTypingPhase = true;
+        const messages = ["3", "2", "1", "YOU", "ARE", "MY", "LOVE"];
         
-        // --- KONFIGURASI HUJAN ---
-        const rainChars = ['I', 'L', 'O', 'V', 'E', 'U', '❤️'];
-        let typingIndex = 0;
-        let isTypingDone = false;
-
+        // --- RAIN DROP SYSTEM ---
+        const rainChars = ['I','L','O','V','E','U','❤️','{','}',';','>','_'];
+        
         class RainDrop {
-            constructor(x, char, isStatic = false) {
+            constructor(x, y, char, speed) {
                 this.x = x;
-                this.y = isStatic ? 20 : Math.random() * -canvas.height;
+                this.y = y;
                 this.char = char;
-                this.speed = 3 + Math.random() * 3;
-                this.isStatic = isStatic;
-                this.opacity = isStatic ? 1 : 0.6;
+                this.speed = speed;
             }
             draw() {
-                ctx.fillStyle = `rgba(0, 212, 255, ${this.opacity})`;
-                ctx.font = "18px monospace";
+                ctx.fillStyle = "rgba(0, 212, 255, 0.6)";
+                ctx.font = "16px monospace";
                 ctx.fillText(this.char, this.x, this.y);
-            }
-            update() {
-                if (!this.isStatic) {
-                    this.y += this.speed;
-                    if (this.y > canvas.height) this.y = -20;
-                }
             }
         }
 
-        // --- SISTEM PARTIKEL (MORPHING) ---
+        // --- PARTICLE SYSTEM (MORPHING) ---
         class Particle {
             constructor(x, y) {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
                 this.destX = x;
                 this.destY = y;
-                this.vx = (Math.random() - 0.5) * 20; // Efek memancar/meledak
-                this.vy = (Math.random() - 0.5) * 20;
-                this.acc = 0.5;
-                this.friction = 0.9;
-                this.color = "white";
-            }
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
-                ctx.fill();
+                this.vx = 0;
+                this.vy = 0;
+                this.acc = 0.015; // Lebih pelan
+                this.friction = 0.92;
             }
             update() {
-                // Pergerakan menuju target (morphing)
                 let dx = this.destX - this.x;
                 let dy = this.destY - this.y;
-                let dist = Math.sqrt(dx * dx + dy * dy);
-                let force = dist / 100;
                 
-                this.vx += dx * force * this.acc;
-                this.vy += dy * force * this.acc;
+                this.vx += dx * this.acc;
+                this.vy += dy * this.acc;
                 this.vx *= this.friction;
                 this.vy *= this.friction;
 
                 this.x += this.vx;
                 this.y += this.vy;
             }
+            draw() {
+                ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
 
+        // --- GET POINTS FOR TEXT ---
         function getPoints(text) {
-            let points = [];
+            let pts = [];
+            ctx.clearRect(0,0, canvas.width, canvas.height);
             ctx.fillStyle = "white";
-            ctx.font = text === "HEART" ? "bold 300px Arial" : "bold 400px Arial";
+            ctx.font = "bold 450px Arial"; // Ukuran Gede
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (text === "HEART") {
-                ctx.fillText("❤️", canvas.width / 2, canvas.height / 2);
-            } else {
-                ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-            }
+            ctx.fillText(text, canvas.width/2, canvas.height/2);
 
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            // Scan pixels (Dibuat dempet/rapat)
-            for (let y = 0; y < canvas.height; y += 7) {
-                for (let x = 0; x < canvas.width; x += 7) {
-                    if (imageData.data[(y * canvas.width + x) * 4 + 3] > 128) {
-                        points.push({ x: x, y: y });
+            const data = ctx.getImageData(0,0, canvas.width, canvas.height).data;
+            for (let y = 0; y < canvas.height; y += 8) { // Rapat
+                for (let x = 0; x < canvas.width; x += 8) {
+                    if (data[(y * canvas.width + x) * 4 + 3] > 128) {
+                        pts.push({x, y});
                     }
                 }
             }
-            return points;
+            return pts;
         }
 
-        function transitionTo(step) {
+        function transition(step) {
             const newPoints = getPoints(messages[step]);
             
-            // Atur ulang warna untuk hati
-            const color = messages[step] === "HEART" ? "#ff85a1" : "white";
-
+            // Re-use particles or add more
             if (particles.length < newPoints.length) {
                 for (let i = newPoints.length - particles.length; i > 0; i--) {
-                    particles.push(new Particle(canvas.width / 2, canvas.height / 2));
+                    particles.push(new Particle(canvas.width/2, canvas.height/2));
                 }
             }
 
@@ -148,48 +162,47 @@
                 let target = newPoints[i % newPoints.length];
                 p.destX = target.x;
                 p.destY = target.y;
-                p.vx = (Math.random() - 0.5) * 50; // Ledakan memancar saat transisi
-                p.vy = (Math.random() - 0.5) * 50;
-                p.color = color;
-            }
-
-            if (messages[step] === "HEART") {
-                setTimeout(() => { overlayText.style.display = 'block'; }, 1000);
+                // Efek pancaran saat ganti huruf
+                p.vx = (Math.random() - 0.5) * 40;
+                p.vy = (Math.random() - 0.5) * 40;
             }
         }
 
-        // --- ANIMASI AWAL (TYPING RAIN) ---
-        function initTypingRain() {
-            let xPos = 0;
-            let interval = setInterval(() => {
-                if (xPos < canvas.width) {
-                    for(let i=0; i<3; i++) { // Ketik beberapa karakter sekaligus
-                        let char = rainChars[Math.floor(Math.random() * rainChars.length)];
-                        rainDrops.push(new RainDrop(xPos, char, true));
-                        xPos += 25;
-                    }
-                } else {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        // Ubah status static jadi jatuh
-                        rainDrops.forEach(d => d.isStatic = false);
-                        isTypingDone = true;
-                        transitionTo(0); // Mulai angka 3
-                        startMorphingLoop();
-                    }, 1000);
+        // --- PHASES ---
+        async function startSequence() {
+            // 1. Typing Phase (Full Screen)
+            for (let y = 30; y < canvas.height; y += 30) {
+                for (let x = 20; x < canvas.width; x += 30) {
+                    let char = rainChars[Math.floor(Math.random() * rainChars.length)];
+                    rainDrops.push(new RainDrop(x, y, char, 0));
+                    if (Math.random() > 0.8) await new Promise(r => setTimeout(r, 5));
                 }
-            }, 30);
+            }
+            
+            await new Promise(r => setTimeout(r, 1000));
+            isTypingPhase = false;
+            
+            // Aktifkan hujan jatuh vertikal
+            rainDrops.forEach(d => d.speed = 2 + Math.random() * 4);
+
+            // 2. Morphing Phase
+            runMorphing();
         }
 
-        function startMorphingLoop() {
-            let loop = setInterval(() => {
+        function runMorphing() {
+            transition(currentStep);
+            let timer = setInterval(() => {
                 currentStep++;
                 if (currentStep < messages.length) {
-                    transitionTo(currentStep);
+                    transition(currentStep);
                 } else {
-                    clearInterval(loop);
+                    clearInterval(timer);
+                    setTimeout(() => {
+                        particles = []; // Bersihkan dot
+                        finalUI.style.display = 'flex';
+                    }, 2500);
                 }
-            }, currentStep <= 2 ? 1500 : 2200); // 3,2,1 lebih cepat, kata-kata lebih lambat
+            }, 3000); // Pelan (3 detik per transisi)
         }
 
         function animate() {
@@ -197,11 +210,14 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             rainDrops.forEach(d => {
-                d.update();
+                if (!isTypingPhase) {
+                    d.y += d.speed;
+                    if (d.y > canvas.height) d.y = -20;
+                }
                 d.draw();
             });
 
-            if (isTypingDone) {
+            if (!isTypingPhase) {
                 particles.forEach(p => {
                     p.update();
                     p.draw();
@@ -211,7 +227,7 @@
             requestAnimationFrame(animate);
         }
 
-        initTypingRain();
+        startSequence();
         animate();
 
         window.addEventListener('resize', () => {
