@@ -8,7 +8,7 @@
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #000; /* Latar Hitam */
+            background-color: #000;
             font-family: 'Arial Black', sans-serif;
             display: flex;
             justify-content: center;
@@ -28,108 +28,82 @@
             z-index: 2;
             text-align: center;
             width: 100%;
-            height: 100%;
-        }
-
-        /* Gaya Tulisan Dotted Putih Besar */
-        .message {
-            font-size: clamp(5rem, 15vw, 12rem); /* Ukuran sangat besar tapi responsif */
-            font-weight: 900;
-            color: white;
-            /* Pola Dotted */
-            background-image: radial-gradient(circle, white 35%, transparent 42%);
-            background-size: 12px 12px;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            
-            opacity: 0;
-            display: none;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            white-space: nowrap;
-        }
-
-        /* Animasi Memecah & Menyatu */
-        @keyframes assemble {
-            0% { 
-                opacity: 0; 
-                letter-spacing: 100px; 
-                transform: translate(-50%, -50%) scale(1.5); 
-                filter: blur(15px); 
-            }
-            100% { 
-                opacity: 1; 
-                letter-spacing: 5px; 
-                transform: translate(-50%, -50%) scale(1); 
-                filter: blur(0); 
-            }
-        }
-
-        .active {
-            display: block;
-            animation: assemble 1.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-        }
-
-        /* Bagian Akhir: Love Besar */
-        .final-container {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            animation: finalFade 2s ease-in forwards;
-        }
-
-        .heart-wrapper {
-            position: relative;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        .big-heart {
-            background-color: #ff85a1; /* Pink */
-            height: 350px;
-            width: 350px;
-            transform: rotate(-45deg);
-            position: relative;
-            box-shadow: 0 0 80px rgba(255, 133, 161, 0.6);
-        }
-
-        .big-heart:before, .big-heart:after {
-            content: "";
-            background-color: #ff85a1;
-            border-radius: 50%;
-            height: 350px;
+        /* Gaya Tulisan Dotted Putih */
+        .message {
+            font-size: clamp(6rem, 20vw, 15rem);
+            font-weight: 900;
+            color: white;
+            background-image: radial-gradient(circle, white 30%, transparent 45%);
+            background-size: 14px 14px;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             position: absolute;
-            width: 350px;
+            display: none;
         }
 
-        .big-heart:before { top: -175px; left: 0; }
-        .big-heart:after { left: 175px; top: 0; }
+        /* Animasi Meledak & Menyatu (Explode to Center) */
+        @keyframes explodeAssemble {
+            0% { opacity: 0; transform: scale(0.1); letter-spacing: 200px; filter: blur(20px); }
+            30% { opacity: 1; transform: scale(1.5); letter-spacing: 150px; filter: blur(5px); }
+            100% { opacity: 1; transform: scale(1); letter-spacing: 5px; filter: blur(0); }
+        }
+
+        .active {
+            display: block;
+            animation: explodeAssemble 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        /* Bagian Akhir: Outline Love dari Kumpulan Hati Kecil */
+        .final-container {
+            display: none;
+            position: relative;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .heart-outline {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        /* Partikel Love Kecil yang bergoyang di pinggir */
+        .mini-heart {
+            position: absolute;
+            color: #ff85a1;
+            font-size: 20px;
+            animation: sway 2s infinite ease-in-out;
+        }
 
         .final-text {
             position: absolute;
-            z-index: 3;
-            width: 450px;
-            font-size: 2.2rem;
-            color: #ff1493; /* Tulisan Pink */
+            z-index: 5;
+            font-size: 2.5rem;
+            color: #ff85a1;
             font-weight: bold;
             text-align: center;
+            width: 100%;
         }
 
-        .red-heart {
-            color: #ff0000; /* Emote Hati Merah */
+        .red-heart { color: #ff0000; }
+
+        @keyframes sway {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(15deg); }
         }
 
-        @keyframes finalFade {
-            from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
     </style>
 </head>
@@ -147,82 +121,88 @@
         <div class="message" id="m7">LOVE</div>
         
         <div id="final" class="final-container">
-            <div class="heart-wrapper">
-                <div class="big-heart"></div>
-                <div class="final-text">I Love <span class="red-heart">❤️</span> You Sayang</div>
-            </div>
+            <div id="heart-shape" class="heart-outline"></div>
+            <div class="final-text">I Love <span class="red-heart">❤️</span> You Sayang</div>
         </div>
     </div>
 
     <script>
         const canvas = document.getElementById('rainCanvas');
         const ctx = canvas.getContext('2d');
-
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Model Hujan: Satu karakter per kolom (I, L, O, V, E, Y, O, U, ❤️)
+        // --- Rain Drop Settings ---
         const charList = ['I', 'L', 'O', 'V', 'E', 'Y', 'O', 'U', '❤️']; 
-        const fontSize = 20;
-        const columns = Math.floor(canvas.width / 30); // Jarak antar kolom lebih lebar
         const rainDrops = [];
+        const columns = Math.floor(canvas.width / 40); // Lebih lebar agar tidak berantakan
 
-        // Inisialisasi posisi dan karakter untuk setiap kolom
         for (let i = 0; i < columns; i++) {
             rainDrops.push({
-                x: i * 30,
-                y: Math.random() * canvas.height,
+                x: i * 40,
+                y: Math.random() * -canvas.height,
                 char: charList[Math.floor(Math.random() * charList.length)],
-                speed: 2 + Math.random() * 5
+                speed: 3 + Math.random() * 2 // Kecepatan dibuat lebih tenang agar enak dilihat
             });
         }
 
         function drawRain() {
-            // Efek trail yang sangat halus
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.font = fontSize + 'px monospace';
+            ctx.font = '20px monospace';
 
             rainDrops.forEach(drop => {
-                // Warna biru air transparan
-                ctx.fillStyle = 'rgba(0, 212, 255, 0.8)';
+                ctx.fillStyle = 'rgba(0, 212, 255, 0.6)'; // Biru air tipis
                 ctx.fillText(drop.char, drop.x, drop.y);
-
-                // Update posisi
                 drop.y += drop.speed;
-
-                // Reset jika keluar layar
                 if (drop.y > canvas.height) {
-                    drop.y = -20;
+                    drop.y = -30;
                     drop.char = charList[Math.floor(Math.random() * charList.length)];
                 }
             });
         }
 
-        // Kontrol Transisi Teks
+        // --- Kontrol Animasi Teks ---
         const messages = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7'];
         let currentIndex = 0;
 
         function showNextMessage() {
             if (currentIndex < messages.length) {
                 if (currentIndex > 0) {
-                    document.getElementById(messages[currentIndex - 1]).classList.remove('active');
-                    document.getElementById(messages[currentIndex - 1]).style.display = 'none';
+                    const prev = document.getElementById(messages[currentIndex - 1]);
+                    prev.style.display = 'none';
                 }
-                
                 const current = document.getElementById(messages[currentIndex]);
                 current.classList.add('active');
                 
                 currentIndex++;
-                setTimeout(showNextMessage, 3200); // Jeda per kata
+                // 3, 2, 1 dibuat 1 detik, YOU ARE MY LOVE dibuat 1.5 detik agar terbaca
+                let delay = currentIndex <= 3 ? 1200 : 1800;
+                setTimeout(showNextMessage, delay);
             } else {
-                // Sembunyikan kata terakhir dan munculkan Love Besar
-                document.getElementById(messages[messages.length - 1]).classList.remove('active');
-                setTimeout(() => {
-                    document.getElementById(messages[messages.length - 1]).style.display = 'none';
-                    document.getElementById('final').style.display = 'flex';
-                }, 1000);
+                document.getElementById(messages[messages.length-1]).style.display = 'none';
+                createHeartOutline();
+                document.getElementById('final').style.display = 'flex';
+            }
+        }
+
+        // --- Membuat Bentuk Love dari Kumpulan Love Kecil ---
+        function createHeartOutline() {
+            const container = document.getElementById('heart-shape');
+            const totalPoints = 40; 
+            for (let i = 0; i < totalPoints; i++) {
+                const t = (i / totalPoints) * Math.PI * 2;
+                // Rumus matematika bentuk hati
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+                
+                const dot = document.createElement('div');
+                dot.className = 'mini-heart';
+                dot.innerHTML = '❤️';
+                dot.style.left = (x * 12 + 200) + 'px'; // Skala pembesaran hati
+                dot.style.top = (y * 12 + 200) + 'px';
+                dot.style.animationDelay = (Math.random() * 2) + 's';
+                container.appendChild(dot);
             }
         }
 
