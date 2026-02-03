@@ -8,8 +8,8 @@
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #e0f7fa; /* Latar terang (biru sangat muda) */
-            font-family: 'Arial', sans-serif;
+            background-color: #f0faff;
+            font-family: 'Segoe UI', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -29,65 +29,71 @@
             text-align: center;
         }
 
+        /* Gaya Tulisan Titik-titik */
         .message {
             font-size: 8rem;
-            font-weight: bold;
-            color: #0277bd; /* Biru tua agar kontras dengan latar terang */
-            text-shadow: 2px 2px 10px rgba(255, 255, 255, 0.8);
+            font-weight: 900;
+            color: #0077b6;
+            /* Efek Dot/Titik-titik menggunakan Masking */
+            background-image: radial-gradient(circle, #0077b6 40%, transparent 45%);
+            background-size: 8px 8px;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            
             opacity: 0;
-            transform: scale(0.5);
-            transition: all 0.8s ease-in-out;
+            transform: scale(0.5) translateY(50px);
+            transition: all 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
             display: none;
         }
 
         .message.active {
             display: block;
             opacity: 1;
-            transform: scale(1);
+            transform: scale(1) translateY(0);
         }
 
-        /* Gaya Khusus untuk Love Terakhir */
+        /* Bagian Akhir */
         .heart-container {
             display: none;
             flex-direction: column;
             align-items: center;
-            animation: pulse 1.5s infinite;
+            animation: finalPop 1.5s ease-out forwards;
         }
 
         .heart {
-            background-color: #ff4081;
-            display: inline-block;
-            height: 100px;
-            margin: 0 10px;
-            position: relative;
-            top: 0;
+            background-color: #ff4d6d;
+            height: 120px;
+            width: 120px;
             transform: rotate(-45deg);
-            width: 100px;
+            position: relative;
+            box-shadow: 0 0 50px rgba(255, 77, 109, 0.6);
+            margin-bottom: 60px;
         }
 
         .heart:before, .heart:after {
             content: "";
-            background-color: #ff4081;
+            background-color: #ff4d6d;
             border-radius: 50%;
-            height: 100px;
+            height: 120px;
             position: absolute;
-            width: 100px;
+            width: 120px;
         }
 
-        .heart:before { top: -50px; left: 0; }
-        .heart:after { left: 50px; top: 0; }
+        .heart:before { top: -60px; left: 0; }
+        .heart:after { left: 60px; top: 0; }
 
         .final-text {
-            margin-top: 60px;
-            font-size: 3rem;
-            color: #ad1457;
+            font-size: 3.5rem;
+            color: #c9184a;
             font-weight: bold;
+            background: none;
+            -webkit-text-fill-color: #c9184a;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+        @keyframes finalPop {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
@@ -111,62 +117,73 @@
     </div>
 
     <script>
-        // --- LOGIKA ANIMASI HUJAN ---
         const canvas = document.getElementById('rainCanvas');
         const ctx = canvas.getContext('2d');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        const characters = '01'; // Bisa diganti dengan simbol lain
+        // Hujan berisi teks "I Love You ❤️"
+        const rainWords = ["I", "Love", "You", "❤️"];
         const fontSize = 16;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(1);
+        const columns = canvas.width / 100; // Lebih renggang agar teks terbaca
+        const drops = [];
+
+        for (let x = 0; x < columns; x++) {
+            drops[x] = Math.random() * -100; 
+        }
 
         function drawRain() {
-            // Background semi-transparan untuk efek trail
-            ctx.fillStyle = 'rgba(224, 247, 250, 0.1)';
+            ctx.fillStyle = 'rgba(240, 250, 255, 0.2)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = '#4fc3f7'; // Warna air hujan biru muda
-            ctx.font = fontSize + 'px arial';
+            ctx.font = fontSize + 'px Arial';
 
             for (let i = 0; i < drops.length; i++) {
-                const text = characters.charAt(Math.floor(Math.random() * characters.length));
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                // Ambil kata secara acak dari list
+                const text = rainWords[Math.floor(Math.random() * rainWords.length)];
+                
+                // Warna biru air transparan
+                ctx.fillStyle = '#4cc9f0'; 
+                ctx.fillText(text, i * 100, drops[i] * fontSize);
 
                 if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
                     drops[i] = 0;
                 }
-                drops[i]++;
+                drops[i] += 0.5; // Kecepatan jatuh
             }
         }
 
-        // --- LOGIKA PERGANTIAN TEKS ---
         const messages = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7'];
         let currentIndex = 0;
 
         function showNextMessage() {
             if (currentIndex < messages.length) {
                 if (currentIndex > 0) {
-                    document.getElementById(messages[currentIndex - 1]).classList.remove('active');
+                    const prev = document.getElementById(messages[currentIndex - 1]);
+                    prev.style.opacity = '0';
+                    prev.style.transform = 'scale(1.5)'; // Efek zoom out saat hilang
+                    setTimeout(() => { prev.style.display = 'none'; }, 1000);
                 }
-                document.getElementById(messages[currentIndex]).classList.add('active');
+                
+                const current = document.getElementById(messages[currentIndex]);
+                current.style.display = 'block';
+                setTimeout(() => { current.classList.add('active'); }, 50);
+                
                 currentIndex++;
-                setTimeout(showNextMessage, 1200); // Kecepatan ganti teks (1.2 detik)
+                // Delay 3.2 detik (2.2s + 1s tambahan)
+                setTimeout(showNextMessage, 3200); 
             } else {
-                // Sembunyikan kata terakhir, munculkan hati
-                document.getElementById(messages[messages.length - 1]).classList.remove('active');
+                // Transisi ke Final
+                document.getElementById(messages[messages.length - 1]).style.display = 'none';
                 const final = document.getElementById('final');
                 final.style.display = 'flex';
             }
         }
 
-        // Jalankan animasi
-        setInterval(drawRain, 33);
-        setTimeout(showNextMessage, 1000);
+        setInterval(drawRain, 30);
+        setTimeout(showNextMessage, 1500);
 
-        // Resize canvas jika jendela diubah
         window.onresize = () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
