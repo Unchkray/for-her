@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For My Love</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
     <style>
         body { 
             margin: 0; 
@@ -28,7 +29,6 @@
             align-items: center;
         }
 
-        /* Gaya Teks Utama: Besar dan Bercahaya */
         .message {
             font-size: clamp(8rem, 25vw, 15rem);
             font-weight: 900;
@@ -36,9 +36,8 @@
             position: absolute;
             opacity: 0;
             transform: translateY(50px);
-            transition: all 1.2s cubic-bezier(0.23, 1, 0.32, 1);
-            text-shadow: 0 0 30px rgba(255, 255, 255, 0.6), 0 0 60px rgba(0, 195, 255, 0.3);
-            letter-spacing: -5px;
+            transition: all 1s cubic-bezier(0.23, 1, 0.32, 1);
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.6), 0 0 60px rgba(0, 195, 255, 0.5);
             display: none;
         }
 
@@ -48,7 +47,7 @@
             transform: translateY(0);
         }
 
-        /* Bagian Akhir: Hati yang Lebih Modern */
+        /* Bagian Akhir: Hati diperbesar */
         #final-ui {
             display: none;
             flex-direction: column;
@@ -59,8 +58,8 @@
 
         .heart-box {
             position: relative;
-            width: 350px;
-            height: 350px;
+            width: 500px; /* Diperbesar dari 350px */
+            height: 500px; /* Diperbesar dari 350px */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -71,21 +70,23 @@
             height: 100%;
             fill: none;
             stroke: #ff4d6d;
-            stroke-width: 2;
+            stroke-width: 1.5;
             stroke-dasharray: 1000;
             stroke-dashoffset: 1000;
             animation: drawHeart 3s forwards ease-in-out;
-            filter: drop-shadow(0 0 15px #ff4d6d);
+            filter: drop-shadow(0 0 20px #ff4d6d);
         }
 
         .final-text {
             position: absolute;
-            color: #ff85a1;
-            font-size: 2.5rem;
+            color: #fff;
+            font-size: 2.8rem; /* Ukuran teks disesuaikan */
             font-weight: bold;
             text-align: center;
-            width: 400px;
-            text-shadow: 0 0 10px rgba(255, 77, 109, 0.5);
+            width: 100%;
+            padding: 0 20px;
+            text-shadow: 0 0 15px #ff4d6d;
+            z-index: 20;
         }
 
         @keyframes drawHeart {
@@ -124,39 +125,59 @@
     <script>
         const canvas = document.getElementById('rainCanvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
 
-        // --- Rain Drop Digital (Halus & Cinematic) ---
+        // --- Rain Drop Neon (Warna Terang & Berwarna) ---
         let drops = [];
-        const chars = ['I', 'L', 'O', 'V', 'E', 'Y', 'O', 'U', '❤️'];
+        const chars = ['I', 'L', 'O', 'V', 'E', 'Y', 'O', 'U', '❤️', '✨'];
+        const colors = ['#00f2ff', '#0062ff', '#ff0077', '#00ff95', '#fbff00'];
 
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 120; i++) {
             drops.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                speed: 2 + Math.random() * 3,
+                speed: 3 + Math.random() * 5,
                 char: chars[Math.floor(Math.random() * chars.length)],
-                opacity: 0.1 + Math.random() * 0.3
+                color: colors[Math.floor(Math.random() * colors.length)],
+                opacity: 0.4 + Math.random() * 0.6, // Dibuat lebih terang
+                fontSize: 12 + Math.random() * 10
             });
         }
 
         function drawRain() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+            // Efek trail sedikit lebih gelap agar karakter neon lebih menyala
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             drops.forEach(d => {
-                ctx.fillStyle = `rgba(0, 195, 255, ${d.opacity})`;
-                ctx.font = '14px monospace';
+                ctx.fillStyle = d.color;
+                ctx.globalAlpha = d.opacity;
+                ctx.font = `${d.fontSize}px monospace`;
                 ctx.fillText(d.char, d.x, d.y);
+                
+                // Tambahkan sedikit glow pada rain drops
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = d.color;
+
                 d.y += d.speed;
-                if (d.y > canvas.height) d.y = -20;
+                if (d.y > canvas.height) {
+                    d.y = -50;
+                    d.x = Math.random() * canvas.width;
+                }
+                ctx.shadowBlur = 0; // Reset glow agar tidak berat
             });
+            ctx.globalAlpha = 1;
             requestAnimationFrame(drawRain);
         }
         drawRain();
 
-        // --- Logic Animasi Teks ---
+        // --- Logic Transisi ---
         const steps = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7'];
         let idx = 0;
 
@@ -165,7 +186,7 @@
                 if (idx > 0) {
                     const prev = document.getElementById(steps[idx - 1]);
                     prev.classList.remove('active');
-                    setTimeout(() => prev.style.display = 'none', 1200);
+                    setTimeout(() => prev.style.display = 'none', 1000);
                 }
 
                 const curr = document.getElementById(steps[idx]);
@@ -173,25 +194,18 @@
                 setTimeout(() => curr.classList.add('active'), 50);
 
                 idx++;
-                // 3,2,1 lebih cepat (1.5s), YOU ARE MY LOVE lebih santai (2.5s)
-                let waitTime = idx <= 3 ? 1500 : 2500;
+                let waitTime = idx <= 3 ? 1200 : 2000;
                 setTimeout(nextStep, waitTime);
             } else {
                 document.getElementById(steps[steps.length - 1]).classList.remove('active');
                 setTimeout(() => {
                     document.getElementById(steps[steps.length - 1]).style.display = 'none';
                     document.getElementById('final-ui').style.display = 'flex';
-                }, 1200);
+                }, 1000);
             }
         }
 
-        // Mulai setelah 1 detik
         setTimeout(nextStep, 1000);
-
-        window.onresize = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        };
     </script>
 </body>
 </html>
