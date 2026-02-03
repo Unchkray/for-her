@@ -29,6 +29,7 @@
             align-items: center;
         }
 
+        /* Intensitas Cahaya Teks Dikembalikan Seperti Semula */
         .message {
             font-size: clamp(8rem, 25vw, 15rem);
             font-weight: 900;
@@ -37,7 +38,7 @@
             opacity: 0;
             transform: translateY(50px);
             transition: all 1s cubic-bezier(0.23, 1, 0.32, 1);
-            text-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.6), 0 0 60px rgba(0, 195, 255, 0.3);
             display: none;
         }
 
@@ -57,7 +58,7 @@
 
         .heart-box {
             position: relative;
-            width: 500px;
+            width: 500px; /* Ukuran besar agar teks tidak mentok */
             height: 500px;
             display: flex;
             justify-content: center;
@@ -73,7 +74,7 @@
             stroke-dasharray: 1000;
             stroke-dashoffset: 1000;
             animation: drawHeart 3.5s forwards ease-in-out;
-            filter: drop-shadow(0 0 10px rgba(255, 77, 109, 0.5));
+            filter: drop-shadow(0 0 15px rgba(255, 77, 109, 0.5));
         }
 
         .final-text {
@@ -86,6 +87,9 @@
             padding: 0 20px;
             text-shadow: 0 0 15px rgba(255, 77, 109, 0.6);
             z-index: 20;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Teks lurus di tengah */
         }
 
         @keyframes drawHeart {
@@ -132,11 +136,9 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // --- Rain Drop Blue (Satu Warna & Tidak Terlalu Terang) ---
+        // --- Rain Drop Blue (Satu Warna & Lebih Tenang) ---
         let drops = [];
         const chars = ['I', 'L', 'O', 'V', 'E', 'Y', 'O', 'U', '❤️'];
-        // Menggunakan biru yang lebih redup dan stabil
-        const blueColor = 'rgba(0, 150, 255, 0.4)'; 
 
         for (let i = 0; i < 110; i++) {
             drops.push({
@@ -144,7 +146,7 @@
                 y: Math.random() * canvas.height,
                 speed: 2 + Math.random() * 3,
                 char: chars[Math.floor(Math.random() * chars.length)],
-                opacity: 0.2 + Math.random() * 0.4, 
+                opacity: 0.2 + Math.random() * 0.3, // Kecerahan dikurangi agar tidak pusing
                 fontSize: 14 + Math.random() * 6
             });
         }
