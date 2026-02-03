@@ -8,8 +8,8 @@
         body { 
             margin: 0; 
             overflow: hidden; 
-            background-color: #050505; 
-            font-family: 'Georgia', serif; 
+            background-color: #000; 
+            font-family: 'Montserrat', sans-serif; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,166 +21,172 @@
         #content-container {
             position: relative;
             z-index: 10;
-            text-align: center;
             width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
+        /* Gaya Teks Utama: Besar dan Bercahaya */
         .message {
-            font-size: clamp(4rem, 15vw, 8rem);
+            font-size: clamp(8rem, 25vw, 15rem);
+            font-weight: 900;
             color: #fff;
             position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
             opacity: 0;
-            transition: all 1.5s ease-in-out;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-            letter-spacing: 5px;
+            transform: translateY(50px);
+            transition: all 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.6), 0 0 60px rgba(0, 195, 255, 0.3);
+            letter-spacing: -5px;
             display: none;
         }
 
         .message.active {
             display: block;
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1.1);
+            transform: translateY(0);
         }
 
-        /* Final Heart Style */
+        /* Bagian Akhir: Hati yang Lebih Modern */
         #final-ui {
             display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: finalReveal 2s ease-out forwards;
+        }
+
+        .heart-box {
+            position: relative;
+            width: 350px;
+            height: 350px;
+            display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-            animation: softFade 2.5s forwards;
         }
 
-        .heart-shape {
-            width: 250px;
-            height: 250px;
-            border: 4px solid #ff85a1;
-            transform: rotate(-45deg);
-            position: relative;
-            border-top: none;
-            border-right: none;
+        .heart-svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: #ff4d6d;
+            stroke-width: 2;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: drawHeart 3s forwards ease-in-out;
+            filter: drop-shadow(0 0 15px #ff4d6d);
         }
-
-        .heart-shape::before, .heart-shape::after {
-            content: "";
-            width: 250px;
-            height: 250px;
-            background-color: transparent;
-            border: 4px solid #ff85a1;
-            border-radius: 50%;
-            position: absolute;
-        }
-
-        .heart-shape::before { top: -129px; left: -4px; border-bottom: none; border-right: none; }
-        .heart-shape::after { left: 125px; top: -4px; border-left: none; border-bottom: none; }
 
         .final-text {
             position: absolute;
             color: #ff85a1;
-            font-size: 1.5rem;
+            font-size: 2.5rem;
             font-weight: bold;
-            z-index: 20;
-            letter-spacing: 2px;
+            text-align: center;
+            width: 400px;
+            text-shadow: 0 0 10px rgba(255, 77, 109, 0.5);
         }
 
-        @keyframes softFade {
-            from { opacity: 0; transform: scale(0.9); }
+        @keyframes drawHeart {
+            to { stroke-dashoffset: 0; }
+        }
+
+        @keyframes finalReveal {
+            from { opacity: 0; transform: scale(0.8); }
             to { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
-    <canvas id="bgCanvas"></canvas>
+    <canvas id="rainCanvas"></canvas>
 
     <div id="content-container">
         <div class="message" id="m1">3</div>
         <div class="message" id="m2">2</div>
         <div class="message" id="m3">1</div>
-        <div class="message" id="m4">You</div>
-        <div class="message" id="m5">Are</div>
-        <div class="message" id="m6">My</div>
-        <div class="message" id="m7">Love</div>
+        <div class="message" id="m4">YOU</div>
+        <div class="message" id="m5">ARE</div>
+        <div class="message" id="m6">MY</div>
+        <div class="message" id="m7">LOVE</div>
 
         <div id="final-ui">
-            <div class="heart-shape"></div>
-            <div class="final-text">I Love ❤️ You Sayang</div>
+            <div class="heart-box">
+                <svg class="heart-svg" viewBox="0 0 32 32">
+                    <path d="M16 28.5L14.1 26.7C7.33 20.57 3 16.5 3 11.5 3 7.42 6.42 4 10.5 4c2.31 0 4.52 1.08 5.5 3.12C17.48 5.08 19.69 4 22.5 4c4.08 0 7.5 3.42 7.5 7.5 0 5-4.33 9.07-11.1 15.2L16 28.5z"/>
+                </svg>
+                <div class="final-text">I Love ❤️ You Sayang</div>
+            </div>
         </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('bgCanvas');
+        const canvas = document.getElementById('rainCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // --- Rain / Star Dust Logic (Lebih Tenang) ---
-        let particles = [];
-        const chars = ['I', 'L', 'O', 'V', 'E', 'U', '❤️'];
+        // --- Rain Drop Digital (Halus & Cinematic) ---
+        let drops = [];
+        const chars = ['I', 'L', 'O', 'V', 'E', 'Y', 'O', 'U', '❤️'];
 
-        class Particle {
-            constructor() {
-                this.reset();
-            }
-            reset() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * -canvas.height;
-                this.speed = 1 + Math.random() * 2;
-                this.opacity = 0.1 + Math.random() * 0.4;
-                this.char = chars[Math.floor(Math.random() * chars.length)];
-            }
-            update() {
-                this.y += this.speed;
-                if (this.y > canvas.height) this.reset();
-            }
-            draw() {
-                ctx.fillStyle = `rgba(0, 195, 255, ${this.opacity})`;
-                ctx.font = '14px serif';
-                ctx.fillText(this.char, this.x, this.y);
-            }
+        for (let i = 0; i < 100; i++) {
+            drops.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                speed: 2 + Math.random() * 3,
+                char: chars[Math.floor(Math.random() * chars.length)],
+                opacity: 0.1 + Math.random() * 0.3
+            });
         }
 
-        for (let i = 0; i < 80; i++) particles.push(new Particle());
-
-        function draw() {
-            ctx.fillStyle = 'rgba(5, 5, 5, 0.2)';
+        function drawRain() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(draw);
+
+            drops.forEach(d => {
+                ctx.fillStyle = `rgba(0, 195, 255, ${d.opacity})`;
+                ctx.font = '14px monospace';
+                ctx.fillText(d.char, d.x, d.y);
+                d.y += d.speed;
+                if (d.y > canvas.height) d.y = -20;
+            });
+            requestAnimationFrame(drawRain);
         }
-        draw();
+        drawRain();
 
-        // --- Logic Transisi Teks (Smooth Fade) ---
-        const msgs = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7'];
-        let step = 0;
+        // --- Logic Animasi Teks ---
+        const steps = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7'];
+        let idx = 0;
 
-        function showNext() {
-            if (step < msgs.length) {
-                if (step > 0) {
-                    const prev = document.getElementById(msgs[step-1]);
+        function nextStep() {
+            if (idx < steps.length) {
+                if (idx > 0) {
+                    const prev = document.getElementById(steps[idx - 1]);
                     prev.classList.remove('active');
-                    setTimeout(() => prev.style.display = 'none', 1500);
+                    setTimeout(() => prev.style.display = 'none', 1200);
                 }
-                
-                const current = document.getElementById(msgs[step]);
-                current.style.display = 'block';
-                setTimeout(() => current.classList.add('active'), 50);
-                
-                step++;
-                setTimeout(showNext, 2500); // Jeda tiap kata (2.5 detik)
+
+                const curr = document.getElementById(steps[idx]);
+                curr.style.display = 'block';
+                setTimeout(() => curr.classList.add('active'), 50);
+
+                idx++;
+                // 3,2,1 lebih cepat (1.5s), YOU ARE MY LOVE lebih santai (2.5s)
+                let waitTime = idx <= 3 ? 1500 : 2500;
+                setTimeout(nextStep, waitTime);
             } else {
-                document.getElementById(msgs[msgs.length-1]).classList.remove('active');
+                document.getElementById(steps[steps.length - 1]).classList.remove('active');
                 setTimeout(() => {
-                    document.getElementById(msgs[msgs.length-1]).style.display = 'none';
+                    document.getElementById(steps[steps.length - 1]).style.display = 'none';
                     document.getElementById('final-ui').style.display = 'flex';
-                }, 1500);
+                }, 1200);
             }
         }
 
-        setTimeout(showNext, 1000);
+        // Mulai setelah 1 detik
+        setTimeout(nextStep, 1000);
 
         window.onresize = () => {
             canvas.width = window.innerWidth;
