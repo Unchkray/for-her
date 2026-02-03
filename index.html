@@ -7,47 +7,68 @@
     <style>
         body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Arial', sans-serif; }
         canvas { display: block; }
+
         #final-ui {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             display: none;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
             z-index: 100;
         }
+
+        /* Hati ukuran sedang, transparan tengah (hanya border) */
         .heart-outline {
-            width: 450px;
-            height: 450px;
-            background-color: #ff85a1;
+            width: 300px; /* Ukuran sedang */
+            height: 300px;
+            border: 8px solid #ff85a1; /* Hanya pinggiran */
+            background-color: transparent; /* Tengah warna latar */
             position: relative;
             transform: rotate(-45deg);
-            box-shadow: 0 0 50px rgba(255, 133, 161, 0.4);
+            box-shadow: 0 0 30px rgba(255, 133, 161, 0.4);
             animation: pulse 1.5s infinite ease-in-out;
+            border-top: none;
+            border-right: none;
         }
+
         .heart-outline:before, .heart-outline:after {
             content: "";
-            background-color: #ff85a1;
+            border: 8px solid #ff85a1;
+            background-color: transparent;
             border-radius: 50%;
-            height: 450px;
+            height: 300px;
             position: absolute;
-            width: 450px;
+            width: 300px;
         }
-        .heart-outline:before { top: -225px; left: 0; }
-        .heart-outline:after { left: 225px; top: 0; }
-        
+
+        /* Menyesuaikan border untuk bagian melengkung hati */
+        .heart-outline:before { 
+            top: -154px; 
+            left: -4px; 
+            border-bottom: none;
+            border-right: none;
+            border-left: 8px solid #ff85a1;
+        }
+        .heart-outline:after { 
+            left: 150px; 
+            top: -4px; 
+            border-left: none;
+            border-bottom: none;
+        }
+
         .final-text {
             position: absolute;
             transform: rotate(45deg); /* Mengimbangi rotasi heart */
-            color: #fff;
-            font-size: 2.2rem;
+            color: #ff85a1;
+            font-size: 1.8rem;
             font-weight: bold;
             text-align: center;
-            width: 100%;
+            width: 250px;
             z-index: 110;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
         }
+
         @keyframes pulse {
             0%, 100% { transform: rotate(-45deg) scale(1); }
             50% { transform: rotate(-45deg) scale(1.05); }
@@ -57,9 +78,8 @@
 <body>
 
     <div id="final-ui">
-        <div class="heart-outline">
-            <div class="final-text">I Love ❤️ You Sayang</div>
-        </div>
+        <div class="heart-outline"></div>
+        <div class="final-text">I Love ❤️ You Sayang</div>
     </div>
     <canvas id="mainCanvas"></canvas>
 
@@ -77,8 +97,7 @@
         let isTypingPhase = true;
         const messages = ["3", "2", "1", "YOU", "ARE", "MY", "LOVE"];
         
-        // --- RAIN DROP SYSTEM ---
-        const rainChars = ['I','L','O','V','E','U','❤️','{','}',';','>','_'];
+        const rainChars = ['I','L','O','V','E','U','❤️'];
         
         class RainDrop {
             constructor(x, y, char, speed) {
@@ -86,15 +105,15 @@
                 this.y = y;
                 this.char = char;
                 this.speed = speed;
+                this.delay = Math.random() * 500; // Jeda hujan agar tidak barengan
             }
             draw() {
-                ctx.fillStyle = "rgba(0, 212, 255, 0.6)";
+                ctx.fillStyle = "rgba(0, 212, 255, 0.5)";
                 ctx.font = "16px monospace";
                 ctx.fillText(this.char, this.x, this.y);
             }
         }
 
-        // --- PARTICLE SYSTEM (MORPHING) ---
         class Particle {
             constructor(x, y) {
                 this.x = Math.random() * canvas.width;
@@ -103,42 +122,41 @@
                 this.destY = y;
                 this.vx = 0;
                 this.vy = 0;
-                this.acc = 0.015; // Lebih pelan
-                this.friction = 0.92;
+                this.acc = 0.01; // Pelan dan dramatis
+                this.friction = 0.94;
+                this.r = 4; // Dot matriks lebih besar
             }
             update() {
                 let dx = this.destX - this.x;
                 let dy = this.destY - this.y;
-                
                 this.vx += dx * this.acc;
                 this.vy += dy * this.acc;
                 this.vx *= this.friction;
                 this.vy *= this.friction;
-
                 this.x += this.vx;
                 this.y += this.vy;
             }
             draw() {
                 ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
-        // --- GET POINTS FOR TEXT ---
         function getPoints(text) {
             let pts = [];
             ctx.clearRect(0,0, canvas.width, canvas.height);
             ctx.fillStyle = "white";
-            ctx.font = "bold 450px Arial"; // Ukuran Gede
+            ctx.font = "bold 400px Arial";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(text, canvas.width/2, canvas.height/2);
 
             const data = ctx.getImageData(0,0, canvas.width, canvas.height).data;
-            for (let y = 0; y < canvas.height; y += 8) { // Rapat
-                for (let x = 0; x < canvas.width; x += 8) {
+            // Gap lebih besar (15) agar dot terlihat besar dan terpisah/bold
+            for (let y = 0; y < canvas.height; y += 15) { 
+                for (let x = 0; x < canvas.width; x += 15) {
                     if (data[(y * canvas.width + x) * 4 + 3] > 128) {
                         pts.push({x, y});
                     }
@@ -149,43 +167,41 @@
 
         function transition(step) {
             const newPoints = getPoints(messages[step]);
-            
-            // Re-use particles or add more
             if (particles.length < newPoints.length) {
                 for (let i = newPoints.length - particles.length; i > 0; i--) {
                     particles.push(new Particle(canvas.width/2, canvas.height/2));
                 }
             }
-
             for (let i = 0; i < particles.length; i++) {
                 let p = particles[i];
                 let target = newPoints[i % newPoints.length];
                 p.destX = target.x;
                 p.destY = target.y;
-                // Efek pancaran saat ganti huruf
-                p.vx = (Math.random() - 0.5) * 40;
-                p.vy = (Math.random() - 0.5) * 40;
+                p.vx = (Math.random() - 0.5) * 30;
+                p.vy = (Math.random() - 0.5) * 30;
             }
         }
 
-        // --- PHASES ---
         async function startSequence() {
-            // 1. Typing Phase (Full Screen)
-            for (let y = 30; y < canvas.height; y += 30) {
-                for (let x = 20; x < canvas.width; x += 30) {
+            // Typing layar penuh
+            for (let y = 30; y < canvas.height; y += 40) {
+                for (let x = 20; x < canvas.width; x += 40) {
                     let char = rainChars[Math.floor(Math.random() * rainChars.length)];
                     rainDrops.push(new RainDrop(x, y, char, 0));
-                    if (Math.random() > 0.8) await new Promise(r => setTimeout(r, 5));
+                    if (Math.random() > 0.9) await new Promise(r => setTimeout(r, 10));
                 }
             }
             
             await new Promise(r => setTimeout(r, 1000));
             isTypingPhase = false;
             
-            // Aktifkan hujan jatuh vertikal
-            rainDrops.forEach(d => d.speed = 2 + Math.random() * 4);
+            // Jeda hujan agar alami (tidak jatuh barengan)
+            rainDrops.forEach(d => {
+                setTimeout(() => {
+                    d.speed = 1.5 + Math.random() * 3;
+                }, Math.random() * 3000); 
+            });
 
-            // 2. Morphing Phase
             runMorphing();
         }
 
@@ -198,11 +214,11 @@
                 } else {
                     clearInterval(timer);
                     setTimeout(() => {
-                        particles = []; // Bersihkan dot
+                        particles = []; 
                         finalUI.style.display = 'flex';
-                    }, 2500);
+                    }, 2000);
                 }
-            }, 3000); // Pelan (3 detik per transisi)
+            }, 3500);
         }
 
         function animate() {
@@ -210,7 +226,7 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             rainDrops.forEach(d => {
-                if (!isTypingPhase) {
+                if (!isTypingPhase && d.speed > 0) {
                     d.y += d.speed;
                     if (d.y > canvas.height) d.y = -20;
                 }
@@ -233,6 +249,7 @@
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            // Refresh raindrops on resize if needed
         });
     </script>
 </body>
