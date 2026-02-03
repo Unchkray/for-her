@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Love</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #e0f7fa; /* Latar terang (biru sangat muda) */
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #content-container {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .message {
+            font-size: 8rem;
+            font-weight: bold;
+            color: #0277bd; /* Biru tua agar kontras dengan latar terang */
+            text-shadow: 2px 2px 10px rgba(255, 255, 255, 0.8);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.8s ease-in-out;
+            display: none;
+        }
+
+        .message.active {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Gaya Khusus untuk Love Terakhir */
+        .heart-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            animation: pulse 1.5s infinite;
+        }
+
+        .heart {
+            background-color: #ff4081;
+            display: inline-block;
+            height: 100px;
+            margin: 0 10px;
+            position: relative;
+            top: 0;
+            transform: rotate(-45deg);
+            width: 100px;
+        }
+
+        .heart:before, .heart:after {
+            content: "";
+            background-color: #ff4081;
+            border-radius: 50%;
+            height: 100px;
+            position: absolute;
+            width: 100px;
+        }
+
+        .heart:before { top: -50px; left: 0; }
+        .heart:after { left: 50px; top: 0; }
+
+        .final-text {
+            margin-top: 60px;
+            font-size: 3rem;
+            color: #ad1457;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="rainCanvas"></canvas>
+
+    <div id="content-container">
+        <div class="message" id="m1">3</div>
+        <div class="message" id="m2">2</div>
+        <div class="message" id="m3">1</div>
+        <div class="message" id="m4">You</div>
+        <div class="message" id="m5">Are</div>
+        <div class="message" id="m6">My</div>
+        <div class="message" id="m7">Love</div>
+        
+        <div id="final" class="heart-container">
+            <div class="heart"></div>
+            <div class="final-text">I Love ❤️ You Sayang</div>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGIKA ANIMASI HUJAN ---
+        const canvas = document.getElementById('rainCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const characters = '01'; // Bisa diganti dengan simbol lain
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawRain() {
+            // Background semi-transparan untuk efek trail
+            ctx.fillStyle = 'rgba(224, 247, 250, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#4fc3f7'; // Warna air hujan biru muda
+            ctx.font = fontSize + 'px arial';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        // --- LOGIKA PERGANTIAN TEKS ---
+        const messages = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7'];
+        let currentIndex = 0;
+
+        function showNextMessage() {
+            if (currentIndex < messages.length) {
+                if (currentIndex > 0) {
+                    document.getElementById(messages[currentIndex - 1]).classList.remove('active');
+                }
+                document.getElementById(messages[currentIndex]).classList.add('active');
+                currentIndex++;
+                setTimeout(showNextMessage, 1200); // Kecepatan ganti teks (1.2 detik)
+            } else {
+                // Sembunyikan kata terakhir, munculkan hati
+                document.getElementById(messages[messages.length - 1]).classList.remove('active');
+                const final = document.getElementById('final');
+                final.style.display = 'flex';
+            }
+        }
+
+        // Jalankan animasi
+        setInterval(drawRain, 33);
+        setTimeout(showNextMessage, 1000);
+
+        // Resize canvas jika jendela diubah
+        window.onresize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+    </script>
+</body>
+</html>
