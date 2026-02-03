@@ -19,12 +19,12 @@
             z-index: 100;
         }
 
-        /* Hati ukuran sedang, transparan tengah (hanya border) */
-        .heart-outline {
-            width: 300px; /* Ukuran sedang */
+        /* Hati Hollow / Garis Tepi */
+        .heart-border {
+            width: 300px;
             height: 300px;
-            border: 8px solid #ff85a1; /* Hanya pinggiran */
-            background-color: transparent; /* Tengah warna latar */
+            border: 8px solid #ff85a1;
+            background-color: transparent;
             position: relative;
             transform: rotate(-45deg);
             box-shadow: 0 0 30px rgba(255, 133, 161, 0.4);
@@ -33,7 +33,7 @@
             border-right: none;
         }
 
-        .heart-outline:before, .heart-outline:after {
+        .heart-border:before, .heart-border:after {
             content: "";
             border: 8px solid #ff85a1;
             background-color: transparent;
@@ -43,42 +43,44 @@
             width: 300px;
         }
 
-        /* Menyesuaikan border untuk bagian melengkung hati */
-        .heart-outline:before { 
+        .heart-border:before { 
             top: -154px; 
             left: -4px; 
             border-bottom: none;
             border-right: none;
             border-left: 8px solid #ff85a1;
         }
-        .heart-outline:after { 
+        .heart-border:after { 
             left: 150px; 
             top: -4px; 
             border-left: none;
             border-bottom: none;
         }
 
+        /* Teks lurus di tengah hati */
         .final-text {
             position: absolute;
-            transform: rotate(45deg); /* Mengimbangi rotasi heart */
             color: #ff85a1;
             font-size: 1.8rem;
             font-weight: bold;
             text-align: center;
-            width: 250px;
+            width: 300px;
             z-index: 110;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Memastikan teks lurus */
         }
 
         @keyframes pulse {
-            0%, 100% { transform: rotate(-45deg) scale(1); }
-            50% { transform: rotate(-45deg) scale(1.05); }
+            0%, 100% { transform: translate(0,0) rotate(-45deg) scale(1); }
+            50% { transform: translate(0,0) rotate(-45deg) scale(1.05); }
         }
     </style>
 </head>
 <body>
 
     <div id="final-ui">
-        <div class="heart-outline"></div>
+        <div class="heart-border"></div>
         <div class="final-text">I Love ❤️ You Sayang</div>
     </div>
     <canvas id="mainCanvas"></canvas>
@@ -97,18 +99,18 @@
         let isTypingPhase = true;
         const messages = ["3", "2", "1", "YOU", "ARE", "MY", "LOVE"];
         
-        const rainChars = ['I','L','O','V','E','U','❤️'];
+        const rainChars = ['I','L','O','V','E','U','❤️','_','>','*'];
         
         class RainDrop {
-            constructor(x, y, char, speed) {
+            constructor(x, y, char) {
                 this.x = x;
                 this.y = y;
                 this.char = char;
-                this.speed = speed;
-                this.delay = Math.random() * 500; // Jeda hujan agar tidak barengan
+                this.speed = 0;
+                this.opacity = 1;
             }
             draw() {
-                ctx.fillStyle = "rgba(0, 212, 255, 0.5)";
+                ctx.fillStyle = `rgba(0, 212, 255, ${this.opacity})`;
                 ctx.font = "16px monospace";
                 ctx.fillText(this.char, this.x, this.y);
             }
@@ -116,15 +118,15 @@
 
         class Particle {
             constructor(x, y) {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
+                this.x = x;
+                this.y = y;
                 this.destX = x;
                 this.destY = y;
-                this.vx = 0;
-                this.vy = 0;
-                this.acc = 0.01; // Pelan dan dramatis
-                this.friction = 0.94;
-                this.r = 4; // Dot matriks lebih besar
+                this.vx = (Math.random() - 0.5) * 50; // Pop out awal
+                this.vy = (Math.random() - 0.5) * 50;
+                this.acc = 0.015;
+                this.friction = 0.92;
+                this.r = 4.5; // Dot matriks lebih besar
             }
             update() {
                 let dx = this.destX - this.x;
@@ -148,15 +150,14 @@
             let pts = [];
             ctx.clearRect(0,0, canvas.width, canvas.height);
             ctx.fillStyle = "white";
-            ctx.font = "bold 400px Arial";
+            ctx.font = "bold 450px Arial";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(text, canvas.width/2, canvas.height/2);
 
             const data = ctx.getImageData(0,0, canvas.width, canvas.height).data;
-            // Gap lebih besar (15) agar dot terlihat besar dan terpisah/bold
-            for (let y = 0; y < canvas.height; y += 15) { 
-                for (let x = 0; x < canvas.width; x += 15) {
+            for (let y = 0; y < canvas.height; y += 18) { // Dot jarak besar
+                for (let x = 0; x < canvas.width; x += 18) {
                     if (data[(y * canvas.width + x) * 4 + 3] > 128) {
                         pts.push({x, y});
                     }
@@ -167,40 +168,62 @@
 
         function transition(step) {
             const newPoints = getPoints(messages[step]);
+            
+            // Efek cahaya pop out saat mau ke angka 3 atau YOU
+            const isNewCycle = (messages[step] === "3" || messages[step] === "YOU");
+            
             if (particles.length < newPoints.length) {
                 for (let i = newPoints.length - particles.length; i > 0; i--) {
                     particles.push(new Particle(canvas.width/2, canvas.height/2));
                 }
             }
+
             for (let i = 0; i < particles.length; i++) {
                 let p = particles[i];
                 let target = newPoints[i % newPoints.length];
                 p.destX = target.x;
                 p.destY = target.y;
-                p.vx = (Math.random() - 0.5) * 30;
-                p.vy = (Math.random() - 0.5) * 30;
+                
+                // Jika fase pop-out (ledakan cahaya)
+                if (isNewCycle) {
+                    p.vx = (Math.random() - 0.5) * 80;
+                    p.vy = (Math.random() - 0.5) * 80;
+                } else {
+                    // Animasi perpindahan biasa (morphing)
+                    p.vx += (Math.random() - 0.5) * 20;
+                    p.vy += (Math.random() - 0.5) * 20;
+                }
             }
         }
 
         async function startSequence() {
-            // Typing layar penuh
+            // Fase Mengetik Cepat
             for (let y = 30; y < canvas.height; y += 40) {
                 for (let x = 20; x < canvas.width; x += 40) {
                     let char = rainChars[Math.floor(Math.random() * rainChars.length)];
-                    rainDrops.push(new RainDrop(x, y, char, 0));
-                    if (Math.random() > 0.9) await new Promise(r => setTimeout(r, 10));
+                    rainDrops.push(new RainDrop(x, y, char));
+                    if (Math.random() > 0.8) await new Promise(r => setTimeout(r, 5));
                 }
             }
             
-            await new Promise(r => setTimeout(r, 1000));
+            await new Promise(r => setTimeout(r, 500));
+
+            // Ketikan Menghilang dari Atas
+            for (let i = 0; i < 50; i++) {
+                rainDrops.forEach((d, index) => {
+                   if(d.y < (i * 20)) d.opacity -= 0.1;
+                });
+                await new Promise(r => setTimeout(r, 30));
+            }
+
             isTypingPhase = false;
             
-            // Jeda hujan agar alami (tidak jatuh barengan)
-            rainDrops.forEach(d => {
-                setTimeout(() => {
-                    d.speed = 1.5 + Math.random() * 3;
-                }, Math.random() * 3000); 
-            });
+            // Inisialisasi Rain Drop Alami (Rintik Terbatas)
+            rainDrops = [];
+            for(let i = 0; i < 60; i++) {
+                rainDrops.push(new RainDrop(Math.random() * canvas.width, Math.random() * canvas.height, rainChars[Math.floor(Math.random() * 7)]));
+                rainDrops[i].speed = 2 + Math.random() * 4;
+            }
 
             runMorphing();
         }
@@ -214,30 +237,41 @@
                 } else {
                     clearInterval(timer);
                     setTimeout(() => {
-                        particles = []; 
-                        finalUI.style.display = 'flex';
-                    }, 2000);
+                        // Pop out pecah dot terakhir sebelum love
+                        particles.forEach(p => {
+                            p.destX = Math.random() * canvas.width;
+                            p.destY = Math.random() * canvas.height;
+                            p.vx = (Math.random() - 0.5) * 100;
+                        });
+                        setTimeout(() => {
+                            particles = [];
+                            finalUI.style.display = 'flex';
+                        }, 800);
+                    }, 2500);
                 }
-            }, 3500);
+            }, 3000);
         }
 
         function animate() {
             ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            rainDrops.forEach(d => {
-                if (!isTypingPhase && d.speed > 0) {
-                    d.y += d.speed;
-                    if (d.y > canvas.height) d.y = -20;
-                }
-                d.draw();
-            });
-
             if (!isTypingPhase) {
+                rainDrops.forEach(d => {
+                    d.y += d.speed;
+                    if (d.y > canvas.height) {
+                        d.y = -20;
+                        d.x = Math.random() * canvas.width;
+                    }
+                    d.draw();
+                });
+
                 particles.forEach(p => {
                     p.update();
                     p.draw();
                 });
+            } else {
+                rainDrops.forEach(d => d.draw());
             }
 
             requestAnimationFrame(animate);
@@ -249,7 +283,6 @@
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            // Refresh raindrops on resize if needed
         });
     </script>
 </body>
